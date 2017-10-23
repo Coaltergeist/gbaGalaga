@@ -540,17 +540,34 @@ typedef struct {
  int active;
 } STAR;
 
+typedef struct {
+ int row;
+ int col;
+ int rdel;
+ int height;
+ int width;
+ int active;
+} ASTEROID;
 
-
-
-
-
+typedef struct {
+ int row;
+ int col;
+ int rdel;
+ int height;
+ int width;
+ int active;
+} ENEMY;
+# 60 "game/game.h"
 extern PLAYER player;
 extern BULLET bullets[5];
-extern STAR stars[100];
+extern STAR stars[30];
+extern ASTEROID asteroids[6];
+extern ENEMY enemies[10];
 extern int enemiesRemaining;
 extern int scoreNumber;
 extern int activeStars;
+extern int livesRemaining;
+extern int isHit;
 
 
 void initGame();
@@ -568,6 +585,12 @@ void initStars();
 void initStar();
 void updateStar(STAR *);
 void drawStar(STAR *);
+void initAsteroids();
+void updateAsteroid(ASTEROID* a);
+void drawAsteroid(ASTEROID* a);
+void initEnemies();
+void updateEnemy(ENEMY* e);
+void drawEnemy(ENEMY* e);
 # 4 "game/game.c" 2
 # 1 "game/pictures/ship.h" 1
 # 20 "game/pictures/ship.h"
@@ -577,14 +600,26 @@ extern const unsigned short shipBitmap[288];
 # 20 "game/pictures/bullet.h"
 extern const unsigned short bulletBitmap[8];
 # 6 "game/game.c" 2
+# 1 "game/pictures/asteroid.h" 1
+# 20 "game/pictures/asteroid.h"
+extern const unsigned short asteroidBitmap[144];
+# 7 "game/game.c" 2
+# 1 "game/pictures/enemy.h" 1
+# 20 "game/pictures/enemy.h"
+extern const unsigned short enemyBitmap[144];
+# 8 "game/game.c" 2
 
 
 PLAYER player;
 BULLET bullets[5];
-STAR stars[100];
+STAR stars[30];
+ASTEROID asteroids[6];
+ENEMY enemies[10];
 int scoreNumber;
 int enemiesRemaining;
 int activeStars;
+int livesRemaining;
+int isHit;
 
 
 void initGame() {
@@ -592,10 +627,22 @@ void initGame() {
  initPlayer();
     initBullets();
     initStars();
+    initAsteroids();
+    initEnemies();
+
+    for (int i = 0; i < 10; i++) {
+     if (enemies[i].active == 0) {
+      enemies[i].active = 1;
+      break;
+     }
+    }
 
 
- enemiesRemaining = 100;
+
+ enemiesRemaining = 10;
  activeStars = 0;
+ livesRemaining = 4;
+ isHit = 0;
 
 }
 
@@ -609,8 +656,15 @@ void updateGame() {
   updateBullet(&bullets[i]);
 
 
- for (int i = 0; i < 100; i++)
+ for (int i = 0; i < 30; i++)
   updateStar(&stars[i]);
+
+ for (int i = 0; i < 6; i++)
+  updateAsteroid(&asteroids[i]);
+
+ for (int i = 0; i < 10; i++)
+  updateEnemy(&enemies[i]);
+
 }
 
 
@@ -627,15 +681,21 @@ void drawGame() {
   drawBullet(&bullets[i]);
 
 
- for (int i = 0; i < 100; i++)
+ for (int i = 0; i < 30; i++)
   drawStar(&stars[i]);
+
+ for (int i = 0; i < 6; i++)
+  drawAsteroid(&asteroids[i]);
+
+ for (int i = 0; i < 10; i++)
+  drawEnemy(&enemies[i]);
 }
 
 
 void initPlayer() {
 
  player.row = 130;
- player.col = 102;
+ player.col = 111;
  player.cdel = 2;
  player.height = 16;
  player.width = 18;
@@ -759,7 +819,7 @@ void initStar(int i) {
  stars[i].width = 1;
  stars[i].row = 0;
  stars[i].col = rand() % 240;
- stars[i].rdel = rand() % 6 + 1;
+ stars[i].rdel = rand() % 6 + 2;
  stars[i].active = 1;
 
  activeStars++;
@@ -770,7 +830,7 @@ void initStar(int i) {
 void updateStar(STAR* b) {
 
  if (activeStars < 20) {
-  for (int k = 0; k < 100; k++) {
+  for (int k = 0; k < 30; k++) {
    if (stars[k].active == 0) {
     initStar(k);
     break;
@@ -786,7 +846,7 @@ void updateStar(STAR* b) {
 
    activeStars--;
 
-   for (int j = 0; j < 100; j++) {
+   for (int j = 0; j < 30; j++) {
     if (stars[j].active == 0) {
      initStar(j);
      activeStars++;
@@ -806,5 +866,94 @@ void drawStar(STAR* b) {
 
  if(b->active) {
         drawRect3(b->row, b->col, b->height, b->width, ((31) | (31)<<5 | (31)<<10));
+ }
+}
+
+void initAsteroids() {
+ for (int i = 0; i < 6; i++) {
+  asteroids[i].height = 12;
+  asteroids[i].width = 12;
+  asteroids[i].row = rand() % 160;
+  asteroids[i].col = rand() % 240;
+  asteroids[i].rdel = 1;
+  asteroids[i].active = 1;
+ }
+}
+
+void drawAsteroid(ASTEROID* a) {
+ if (a->active) {
+  drawImage3(a->row, a->col, a->height, a->width, asteroidBitmap);
+ }
+}
+
+void updateAsteroid(ASTEROID* a) {
+ if (a->active) {
+  if (a->row >= 159) {
+   a->row = 0;
+   a->col = rand() % 240;
+  } else {
+   a->row += a->rdel;
+  }
+
+  if (collision(a->row, a->col, a->height, a->width, player.row, player.col, player.height, player.width)) {
+   a->row = 0;
+   a->col = rand() % 240;
+   isHit = 1;
+  }
+ }
+}
+
+void initEnemies() {
+ for (int i = 0; i < 6; i++) {
+  enemies[i].height = 12;
+  enemies[i].width = 12;
+  enemies[i].row = 0;
+  enemies[i].col = rand() % 240;
+  enemies[i].rdel = rand() % 3 + 1;
+  enemies[i].active = 0;
+ }
+}
+
+void drawEnemy(ENEMY* e) {
+ if (e->active) {
+  drawImage3(e->row, e->col, e->height, e->width, enemyBitmap);
+ }
+}
+
+void updateEnemy(ENEMY* e) {
+ if (e->active) {
+  if (e->row >= 159) {
+   e->row = 0;
+   e->col = rand() % 240;
+  } else if (collision(player.row, player.col, player.height, player.width, e->row, e->col, e->height, e->width)) {
+   e->row = 0;
+   e->col = rand() % 240;
+   e->active = 0;
+   enemiesRemaining--;
+   scoreNumber += 10;
+   for (int i = 0; i < 10; i++) {
+       if (enemies[i].active == 0) {
+        enemies[i].active = 1;
+        break;
+       }
+      }
+   isHit = 1;
+  }
+  for (int i = 0; i < 5; i++) {
+   if (collision(bullets[i].row, bullets[i].col, bullets[i].height, bullets[i].width, e->row, e->col, e->height, e->width)) {
+    e->row = 0;
+    e->col = rand() % 240;
+    e->active = 0;
+    enemiesRemaining--;
+    scoreNumber += 10;
+    for (int i = 0; i < 10; i++) {
+        if (enemies[i].active == 0) {
+         enemies[i].active = 1;
+         break;
+        }
+       }
+   }
+  }
+  e->row += e->rdel;
  }
 }

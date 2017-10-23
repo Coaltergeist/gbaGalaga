@@ -3,14 +3,20 @@
 #include "game.h"
 #include "pictures/ship.h"
 #include "pictures/bullet.h"
+#include "pictures/asteroid.h"
+#include "pictures/enemy.h"
 
 // Variables
 PLAYER player;
 BULLET bullets[BULLETCOUNT];
 STAR stars[STARCOUNT];
+ASTEROID asteroids[ASTEROIDCOUNT];
+ENEMY enemies[ENEMYCOUNT];
 int scoreNumber;
 int enemiesRemaining;
 int activeStars;
+int livesRemaining;
+int isHit;
 
 // Initialize the game
 void initGame() {
@@ -18,10 +24,22 @@ void initGame() {
 	initPlayer();
     initBullets();
     initStars();
+    initAsteroids();
+    initEnemies();
+
+    for (int i = 0; i < ENEMYCOUNT; i++) {
+    	if (enemies[i].active == 0) {
+    		enemies[i].active = 1;
+    		break;
+    	}
+    }
+
 
     // Initialize the score
-	enemiesRemaining = STARCOUNT;
+	enemiesRemaining = ENEMYCOUNT;
 	activeStars = 0;
+	livesRemaining = 4;
+	isHit = 0;
 
 }
 
@@ -37,6 +55,13 @@ void updateGame() {
 	// Update all the balls
 	for (int i = 0; i < STARCOUNT; i++)
 		updateStar(&stars[i]);
+
+	for (int i = 0; i < ASTEROIDCOUNT; i++)
+		updateAsteroid(&asteroids[i]);
+
+	for (int i = 0; i < ENEMYCOUNT; i++)
+		updateEnemy(&enemies[i]);
+
 }
 
 // Draws the game each frame
@@ -55,13 +80,19 @@ void drawGame() {
 	// Draw all the balls
 	for (int i = 0; i < STARCOUNT; i++)
 		drawStar(&stars[i]);
+
+	for (int i = 0; i < ASTEROIDCOUNT; i++)
+		drawAsteroid(&asteroids[i]);
+
+	for (int i = 0; i < ENEMYCOUNT; i++)
+		drawEnemy(&enemies[i]);
 }
 
 // Initialize the player
 void initPlayer() {
 
 	player.row = 130;
-	player.col = 102;
+	player.col = 111;
 	player.cdel = 2;
 	player.height = 16;
 	player.width = 18;
@@ -185,7 +216,7 @@ void initStar(int i) {
 	stars[i].width = 1;
 	stars[i].row = 0;
 	stars[i].col = rand() % 240;
-	stars[i].rdel = rand() % 6 + 1;
+	stars[i].rdel = rand() % 6 + 2;
 	stars[i].active = 1;
 
 	activeStars++;
@@ -206,7 +237,7 @@ void updateStar(STAR* b) {
 
 	if (b->active) {
 
-		// Moves ball to top of screen
+		// Moves star to bottom of screen
 		if (b->row + b->height-1 >= 159) {
 			b->active = 0;
 
@@ -222,7 +253,7 @@ void updateStar(STAR* b) {
 		}
 
 
-		// Move the ball
+		// Move the star
 		b->row += b->rdel;
 	}
 }
@@ -232,5 +263,94 @@ void drawStar(STAR* b) {
 
 	if(b->active) {
         drawRect3(b->row, b->col, b->height, b->width, WHITE);
+	}
+}
+
+void initAsteroids() {
+	for (int i = 0; i < ASTEROIDCOUNT; i++) {
+		asteroids[i].height = 12;
+		asteroids[i].width = 12;
+		asteroids[i].row = rand() % 160;
+		asteroids[i].col = rand() % 240;
+		asteroids[i].rdel = 1;
+		asteroids[i].active = 1;
+	}
+}
+
+void drawAsteroid(ASTEROID* a) {
+	if (a->active) {
+		drawImage3(a->row, a->col, a->height, a->width, asteroidBitmap);
+	}
+}
+
+void updateAsteroid(ASTEROID* a) {
+	if (a->active) {
+		if (a->row >= 159) {
+			a->row = 0;
+			a->col = rand() % 240;
+		} else {
+			a->row += a->rdel;
+		}
+
+		if (collision(a->row, a->col, a->height, a->width, player.row, player.col, player.height, player.width)) {
+			a->row = 0;
+			a->col = rand() % 240;
+			isHit = 1;
+		}
+	}
+}
+
+void initEnemies() {
+	for (int i = 0; i < ASTEROIDCOUNT; i++) {
+		enemies[i].height = 12;
+		enemies[i].width = 12;
+		enemies[i].row = 0;
+		enemies[i].col = rand() % 240;
+		enemies[i].rdel = rand() % 3 + 1;
+		enemies[i].active = 0;
+	}
+}
+
+void drawEnemy(ENEMY* e) {
+	if (e->active) {
+		drawImage3(e->row, e->col, e->height, e->width, enemyBitmap);
+	}
+}
+
+void updateEnemy(ENEMY* e) {
+	if (e->active) {
+		if (e->row >= 159) {
+			e->row = 0;
+			e->col = rand() % 240;
+		} else if (collision(player.row, player.col, player.height, player.width, e->row, e->col, e->height, e->width)) {
+			e->row = 0;
+			e->col = rand() % 240;
+			e->active = 0;
+			enemiesRemaining--;
+			scoreNumber += 10;
+			for (int i = 0; i < ENEMYCOUNT; i++) {
+		    	if (enemies[i].active == 0) {
+		    		enemies[i].active = 1;
+		    		break;
+		    	}
+    		}
+			isHit = 1;
+		}
+		for (int i = 0; i < BULLETCOUNT; i++) {
+			if (collision(bullets[i].row, bullets[i].col, bullets[i].height, bullets[i].width, e->row, e->col, e->height, e->width)) {
+				e->row = 0;
+				e->col = rand() % 240;
+				e->active = 0;
+				enemiesRemaining--;
+				scoreNumber += 10;
+				for (int i = 0; i < ENEMYCOUNT; i++) {
+			    	if (enemies[i].active == 0) {
+			    		enemies[i].active = 1;
+			    		break;
+			    	}
+    			}
+			}
+		}
+		e->row += e->rdel;
 	}
 }

@@ -945,17 +945,34 @@ typedef struct {
  int active;
 } STAR;
 
+typedef struct {
+ int row;
+ int col;
+ int rdel;
+ int height;
+ int width;
+ int active;
+} ASTEROID;
 
-
-
-
-
+typedef struct {
+ int row;
+ int col;
+ int rdel;
+ int height;
+ int width;
+ int active;
+} ENEMY;
+# 60 "game/game.h"
 extern PLAYER player;
 extern BULLET bullets[5];
-extern STAR stars[100];
+extern STAR stars[30];
+extern ASTEROID asteroids[6];
+extern ENEMY enemies[10];
 extern int enemiesRemaining;
 extern int scoreNumber;
 extern int activeStars;
+extern int livesRemaining;
+extern int isHit;
 
 
 void initGame();
@@ -973,11 +990,25 @@ void initStars();
 void initStar();
 void updateStar(STAR *);
 void drawStar(STAR *);
+void initAsteroids();
+void updateAsteroid(ASTEROID* a);
+void drawAsteroid(ASTEROID* a);
+void initEnemies();
+void updateEnemy(ENEMY* e);
+void drawEnemy(ENEMY* e);
 # 6 "main.c" 2
 # 1 "game/pictures/ship.h" 1
 # 20 "game/pictures/ship.h"
 extern const unsigned short shipBitmap[288];
 # 7 "main.c" 2
+# 1 "game/pictures/explosion1.h" 1
+# 20 "game/pictures/explosion1.h"
+extern const unsigned short explosion1Bitmap[288];
+# 8 "main.c" 2
+# 1 "game/pictures/explosion2.h" 1
+# 20 "game/pictures/explosion2.h"
+extern const unsigned short explosion2Bitmap[288];
+# 9 "main.c" 2
 
 
 void initialize();
@@ -993,9 +1024,11 @@ void goToWin();
 void win();
 void goToLose();
 void lose();
+void goToHit();
+void hit();
 
 
-enum {START, GAME, PAUSE, WIN, LOSE};
+enum {START, GAME, PAUSE, WIN, LOSE, HIT};
 int state;
 
 
@@ -1010,6 +1043,7 @@ int frameCount;
 
 
 char buffer[41];
+char buffer2[41];
 
 int main() {
 
@@ -1039,6 +1073,9 @@ int main() {
             case LOSE:
                 lose();
                 break;
+            case HIT:
+                hit();
+                break;
         }
 
     }
@@ -1067,12 +1104,26 @@ void goToStart() {
 
 
     seed = 0;
+    frameCount = 1;
 }
 
 
 void start() {
 
     seed++;
+    if (frameCount > 0) {
+        frameCount++;
+        if (frameCount > 120) {
+            drawRect3(76, 86, 8, 100, 0);
+            frameCount = -1;
+        }
+    } else {
+        frameCount--;
+        if (frameCount < -120) {
+            drawString3(76, 86, "Press Start", ((31) | (31)<<5 | (31)<<10));
+            frameCount = 1;
+        }
+    }
 
 
     waitForVBlank();
@@ -1104,20 +1155,25 @@ void game() {
     sprintf(buffer, "Score: %d", scoreNumber);
     drawString3(145, 5, buffer, ((31) | (31)<<5 | (31)<<10));
 
+    sprintf(buffer2, "Lives: %d", livesRemaining - 1);
+    drawString3(145, 184, buffer2, ((31) | (31)<<5 | (31)<<10));
+
 
     if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3)))))
         goToPause();
+    else if (livesRemaining == 0)
+        goToLose();
     else if (enemiesRemaining == 0)
         goToWin();
-    else if ((!(~(oldButtons)&((1<<1))) && (~buttons & ((1<<1)))))
-        goToLose();
+    else if (isHit)
+        goToHit();
 }
 
 
 void goToPause() {
 
-    fillScreen3(((15) | (15)<<5 | (15)<<10));
-    drawString3(80-3, 120-15, "Pause", 0);
+    drawRect3(80 - 3, 120 - 15, 8, 30, 0);
+    drawString3(80-3, 120-15, "Pause", ((31) | (31)<<5 | (31)<<10));
 
 
     waitForVBlank();
@@ -1188,4 +1244,39 @@ void lose() {
 
     if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3)))))
         goToStart();
+}
+
+
+void goToHit() {
+    waitForVBlank();
+    state = HIT;
+    frameCount = 0;
+    livesRemaining--;
+    drawRect3(player.row, player.col, 16, 18, 0);
+    drawImage3(player.row, player.col, 16, 18, explosion1Bitmap);
+
+}
+
+
+void hit() {
+
+    frameCount++;
+    waitForVBlank();
+    if (frameCount % 60 == 0) {
+        drawRect3(player.row, player.col, 16, 18, 0);
+        drawImage3(player.row, player.col, 16, 18, explosion2Bitmap);
+    } else if (frameCount % 120 == 0) {
+        drawRect3(player.row, player.col, 16, 18, 0);
+        drawImage3(player.row, player.col, 16, 18, explosion1Bitmap);
+    }
+
+    if (frameCount > 180) {
+        if (livesRemaining == 0) {
+            goToLose();
+        } else {
+            isHit = 0;
+            goToGame();
+        }
+    }
+
 }

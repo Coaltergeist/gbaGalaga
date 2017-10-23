@@ -4,6 +4,8 @@
 #include "game/font/text.h"
 #include "game/game.h"
 #include "game/pictures/ship.h"
+#include "game/pictures/explosion1.h"
+#include "game/pictures/explosion2.h"
 
 // Prototypes
 void initialize();
@@ -19,9 +21,11 @@ void goToWin();
 void win();
 void goToLose();
 void lose();
+void goToHit();
+void hit();
 
 // States
-enum {START, GAME, PAUSE, WIN, LOSE};
+enum {START, GAME, PAUSE, WIN, LOSE, HIT};
 int state;
 
 // Button Variables
@@ -36,6 +40,7 @@ int frameCount;
 
 // Text Buffer
 char buffer[41];
+char buffer2[41];
 
 int main() {
 
@@ -65,6 +70,9 @@ int main() {
             case LOSE:
                 lose();
                 break;
+            case HIT:
+                hit();
+                break;
         }
                
     }
@@ -93,12 +101,26 @@ void goToStart() {
 
     // Begin the seed randomization
     seed = 0;
+    frameCount = 1;
 }
 
 // Runs every frame of the start state
 void start() {
 
     seed++;
+    if (frameCount > 0) {
+        frameCount++;
+        if (frameCount > 120) {
+            drawRect3(76, 86, 8, 100, BLACK);
+            frameCount = -1;
+        }
+    } else {
+        frameCount--;
+        if (frameCount < -120) {
+            drawString3(76, 86, "Press Start", WHITE);
+            frameCount = 1;
+        }
+    }
 
     // Lock the framerate to 60 fps
     waitForVBlank();
@@ -130,20 +152,25 @@ void game() {
     sprintf(buffer, "Score: %d", scoreNumber);
     drawString3(145, 5, buffer, WHITE);
 
+    sprintf(buffer2, "Lives: %d", livesRemaining - 1);
+    drawString3(145, 184, buffer2, WHITE);
+
     // State transitions
     if (BUTTON_PRESSED(BUTTON_START)) 
         goToPause();
+    else if (livesRemaining == 0)
+        goToLose();
     else if (enemiesRemaining == 0)
         goToWin();
-    else if (BUTTON_PRESSED(BUTTON_B))
-        goToLose();
+    else if (isHit)
+        goToHit();
 }
 
 // Sets up the pause state
 void goToPause() {
 
-    fillScreen3(GRAY);
-    drawString3(80-3, 120-15, "Pause", BLACK);
+    drawRect3(80 - 3, 120 - 15, 8, 30, BLACK);
+    drawString3(80-3, 120-15, "Pause", WHITE);
 
     //TODO 2.2: Wait for vertical blank and flip the page
     waitForVBlank();
@@ -214,4 +241,39 @@ void lose() {
     // State transitions
     if (BUTTON_PRESSED(BUTTON_START)) 
         goToStart();
+}
+
+// Sets up the hit state
+void goToHit() {
+    waitForVBlank();
+    state = HIT;
+    frameCount = 0;
+    livesRemaining--;
+    drawRect3(player.row, player.col, 16, 18, BLACK);
+    drawImage3(player.row, player.col, 16, 18, explosion1Bitmap);
+
+}
+
+// Runs every frame of the hit state
+void hit() {
+
+    frameCount++;
+    waitForVBlank();
+    if (frameCount % 60 == 0) {
+        drawRect3(player.row, player.col, 16, 18, BLACK);
+        drawImage3(player.row, player.col, 16, 18, explosion2Bitmap);
+    } else if (frameCount % 120 == 0) {
+        drawRect3(player.row, player.col, 16, 18, BLACK);
+        drawImage3(player.row, player.col, 16, 18, explosion1Bitmap);
+    }
+
+    if (frameCount > 180) {
+        if (livesRemaining == 0) {
+            goToLose();
+        } else {
+            isHit = 0;
+            goToGame();
+        }
+    }
+
 }
