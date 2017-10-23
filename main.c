@@ -6,6 +6,7 @@
 #include "game/pictures/ship.h"
 #include "game/pictures/explosion1.h"
 #include "game/pictures/explosion2.h"
+#include "game/pictures/winner.h"
 
 // Prototypes
 void initialize();
@@ -196,8 +197,7 @@ void pause() {
 // Sets up the win state
 void goToWin() {
 
-    fillScreen3(GREEN);
-    drawString3(80-3, 120-9, "Win", BLACK);
+    drawFullscreenImage3(winnerBitmap);
 
     //TODO 2.3: Wait for vertical blank and flip the page
     waitForVBlank();

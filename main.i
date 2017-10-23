@@ -871,20 +871,11 @@ void drawImage3(int row, int col, int height, int width, const unsigned short *i
 void drawFullscreenImage3(const unsigned short *image);
 
 
-void setPixel4(int row, int col, unsigned char colorIndex);
-void drawRect4(int row, int col, int height, int width, volatile unsigned char colorIndex);
-void fillScreen4(volatile unsigned char colorIndex);
-void drawImage4(int row, int col, int height, int width, const unsigned short *image);
-void drawFullscreenImage4(const unsigned short *image);
-
-
 void waitForVBlank();
-void flipPage();
-void loadPalette(const unsigned short * palette);
-# 86 "game/library/myLib.h"
+# 77 "game/library/myLib.h"
 extern unsigned short oldButtons;
 extern unsigned short buttons;
-# 97 "game/library/myLib.h"
+# 88 "game/library/myLib.h"
 typedef volatile struct {
     volatile const void *src;
     volatile void *dst;
@@ -893,7 +884,7 @@ typedef volatile struct {
 
 
 extern DMA *dma;
-# 137 "game/library/myLib.h"
+# 128 "game/library/myLib.h"
 void DMANow(int channel, volatile const void *src, volatile void *dst, unsigned int cnt);
 
 
@@ -1009,6 +1000,10 @@ extern const unsigned short explosion1Bitmap[288];
 # 20 "game/pictures/explosion2.h"
 extern const unsigned short explosion2Bitmap[288];
 # 9 "main.c" 2
+# 1 "game/pictures/winner.h" 1
+# 20 "game/pictures/winner.h"
+extern const unsigned short winnerBitmap[38400];
+# 10 "main.c" 2
 
 
 void initialize();
@@ -1199,8 +1194,7 @@ void pause() {
 
 void goToWin() {
 
-    fillScreen3(((0) | (31)<<5 | (0)<<10));
-    drawString3(80-3, 120-9, "Win", 0);
+    drawFullscreenImage3(winnerBitmap);
 
 
     waitForVBlank();

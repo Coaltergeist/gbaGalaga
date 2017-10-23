@@ -52,17 +52,8 @@ void fillScreen3(volatile unsigned short color);
 void drawImage3(int row, int col, int height, int width, const unsigned short *image);
 void drawFullscreenImage3(const unsigned short *image);
 
-// Mode 4 Drawing Functions
-void setPixel4(int row, int col, unsigned char colorIndex);
-void drawRect4(int row, int col, int height, int width, volatile unsigned char colorIndex);
-void fillScreen4(volatile unsigned char colorIndex);
-void drawImage4(int row, int col, int height, int width, const unsigned short *image);
-void drawFullscreenImage4(const unsigned short *image);
-
 // Miscellaneous Drawing Functions
 void waitForVBlank();
-void flipPage();
-void loadPalette(const unsigned short * palette);
 
 
 // ================================== INPUT ===================================

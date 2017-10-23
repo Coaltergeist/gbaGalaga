@@ -288,21 +288,14 @@ goToWin:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	stmfd	sp!, {r3, lr}
-	mov	r0, #992
-	ldr	r3, .L28
+	ldr	r0, .L28
+	ldr	r3, .L28+4
 	mov	lr, pc
 	bx	r3
-	ldr	r2, .L28+4
-	mov	r0, #77
-	mov	r1, #111
-	mov	r3, #0
-	ldr	ip, .L28+8
+	ldr	r3, .L28+8
 	mov	lr, pc
-	bx	ip
+	bx	r3
 	ldr	r3, .L28+12
-	mov	lr, pc
-	bx	r3
-	ldr	r3, .L28+16
 	mov	r2, #3
 	str	r2, [r3, #0]
 	ldmfd	sp!, {r3, lr}
@@ -310,9 +303,8 @@ goToWin:
 .L29:
 	.align	2
 .L28:
-	.word	fillScreen3
-	.word	.LC2
-	.word	drawString3
+	.word	winnerBitmap
+	.word	drawFullscreenImage3
 	.word	waitForVBlank
 	.word	state
 	.size	goToWin, .-goToWin
@@ -379,7 +371,7 @@ goToLose:
 	.align	2
 .L36:
 	.word	fillScreen3
-	.word	.LC3
+	.word	.LC2
 	.word	drawString3
 	.word	waitForVBlank
 	.word	state
@@ -553,12 +545,12 @@ game:
 	.word	updateGame
 	.word	drawGame
 	.word	scoreNumber
-	.word	.LC4
+	.word	.LC3
 	.word	sprintf
 	.word	buffer
 	.word	livesRemaining
 	.word	drawString3
-	.word	.LC5
+	.word	.LC4
 	.word	buffer2
 	.word	oldButtons
 	.word	buttons
@@ -739,13 +731,11 @@ main:
 	.ascii	"Pause\000"
 	.space	2
 .LC2:
-	.ascii	"Win\000"
-.LC3:
 	.ascii	"Lose\000"
 	.space	3
-.LC4:
+.LC3:
 	.ascii	"Score: %d\000"
 	.space	2
-.LC5:
+.LC4:
 	.ascii	"Lives: %d\000"
 	.ident	"GCC: (devkitARM release 31) 4.5.0"
