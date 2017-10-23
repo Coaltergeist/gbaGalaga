@@ -974,9 +974,9 @@ void initStar();
 void updateStar(STAR *);
 void drawStar(STAR *);
 # 6 "main.c" 2
-# 1 "game/pictures/Bill.h" 1
-# 20 "game/pictures/Bill.h"
-extern const unsigned short BillBitmap[38400];
+# 1 "game/pictures/ship.h" 1
+# 20 "game/pictures/ship.h"
+extern const unsigned short shipBitmap[288];
 # 7 "main.c" 2
 
 
@@ -1004,6 +1004,9 @@ unsigned short oldButtons;
 
 
 int seed;
+
+
+int frameCount;
 
 
 char buffer[41];
@@ -1053,12 +1056,12 @@ void initialize() {
 
 void goToStart() {
 
-    drawFullscreenImage3(BillBitmap);
+    fillScreen3(0);
+    drawImage3(130, 111, 16, 18, shipBitmap);
+    drawString3(76, 86, "Press Start", ((31) | (31)<<5 | (31)<<10));
 
 
     waitForVBlank();
-
-
 
     state = START;
 

@@ -61,7 +61,7 @@ void drawGame() {
 void initPlayer() {
 
 	player.row = 130;
-	player.col = 118;
+	player.col = 102;
 	player.cdel = 2;
 	player.height = 16;
 	player.width = 18;
@@ -172,8 +172,9 @@ void drawBullet(BULLET* b) {
 // Initialize the balls
 void initStars() {
 
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < 20; i++) {
 		initStar(i);
+		stars[i].row = rand() % 160;
 
 	}
 }
@@ -194,7 +195,7 @@ void initStar(int i) {
 // Handle every-frame actions of a ball
 void updateStar(STAR* b) {
 
-	if (activeStars < 3) {
+	if (activeStars < 20) {
 		for (int k = 0; k < STARCOUNT; k++) {
 			if (stars[k].active == 0) {
 				initStar(k);

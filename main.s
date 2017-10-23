@@ -17,26 +17,48 @@ goToStart:
 	@ Function supports interworking.
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
-	stmfd	sp!, {r3, lr}
-	ldr	r0, .L2
+	str	lr, [sp, #-4]!
+	mov	r0, #0
+	sub	sp, sp, #12
+	ldr	r3, .L2
+	mov	lr, pc
+	bx	r3
 	ldr	r3, .L2+4
+	mov	r0, #130
+	str	r3, [sp, #0]
+	mov	r1, #111
+	mov	r2, #16
+	mov	r3, #18
+	ldr	ip, .L2+8
 	mov	lr, pc
-	bx	r3
-	ldr	r3, .L2+8
-	mov	lr, pc
-	bx	r3
+	bx	ip
+	mov	r3, #32512
 	ldr	r2, .L2+12
+	mov	r0, #76
+	mov	r1, #86
+	add	r3, r3, #255
+	ldr	ip, .L2+16
+	mov	lr, pc
+	bx	ip
+	ldr	r3, .L2+20
+	mov	lr, pc
+	bx	r3
+	ldr	r2, .L2+24
 	mov	r3, #0
 	str	r3, [r2, #0]
-	ldr	r2, .L2+16
+	ldr	r2, .L2+28
 	str	r3, [r2, #0]
-	ldmfd	sp!, {r3, lr}
+	add	sp, sp, #12
+	ldr	lr, [sp], #4
 	bx	lr
 .L3:
 	.align	2
 .L2:
-	.word	BillBitmap
-	.word	drawFullscreenImage3
+	.word	fillScreen3
+	.word	shipBitmap
+	.word	drawImage3
+	.word	.LC0
+	.word	drawString3
 	.word	waitForVBlank
 	.word	state
 	.word	seed
@@ -153,7 +175,7 @@ goToPause:
 	.align	2
 .L15:
 	.word	fillScreen3
-	.word	.LC0
+	.word	.LC1
 	.word	drawString3
 	.word	waitForVBlank
 	.word	state
@@ -234,7 +256,7 @@ goToWin:
 	.align	2
 .L25:
 	.word	fillScreen3
-	.word	.LC1
+	.word	.LC2
 	.word	drawString3
 	.word	waitForVBlank
 	.word	state
@@ -302,7 +324,7 @@ goToLose:
 	.align	2
 .L33:
 	.word	fillScreen3
-	.word	.LC2
+	.word	.LC3
 	.word	drawString3
 	.word	waitForVBlank
 	.word	state
@@ -373,7 +395,7 @@ game:
 	.word	updateGame
 	.word	drawGame
 	.word	scoreNumber
-	.word	.LC3
+	.word	.LC4
 	.word	buffer
 	.word	sprintf
 	.word	drawString3
@@ -469,17 +491,20 @@ main:
 	.comm	buttons,2,2
 	.comm	state,4,4
 	.comm	seed,4,4
+	.comm	frameCount,4,4
 	.comm	buffer,41,4
 	.section	.rodata.str1.4,"aMS",%progbits,1
 	.align	2
 .LC0:
+	.ascii	"Press Start\000"
+.LC1:
 	.ascii	"Pause\000"
 	.space	2
-.LC1:
-	.ascii	"Win\000"
 .LC2:
+	.ascii	"Win\000"
+.LC3:
 	.ascii	"Lose\000"
 	.space	3
-.LC3:
+.LC4:
 	.ascii	"Score: %d\000"
 	.ident	"GCC: (devkitARM release 31) 4.5.0"

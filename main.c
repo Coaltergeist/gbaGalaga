@@ -3,7 +3,7 @@
 #include "game/library/myLib.h"
 #include "game/font/text.h"
 #include "game/game.h"
-#include "game/pictures/Bill.h"
+#include "game/pictures/ship.h"
 
 // Prototypes
 void initialize();
@@ -30,6 +30,9 @@ unsigned short oldButtons;
 
 // Random Seed
 int seed;
+
+//counts frame by frame to flash image
+int frameCount;
 
 // Text Buffer
 char buffer[41];
@@ -79,12 +82,12 @@ void initialize() {
 // Sets up the start state
 void goToStart() {
 
-    drawFullscreenImage3(BillBitmap);
+    fillScreen3(BLACK);
+    drawImage3(130, 111, 16, 18, shipBitmap);
+    drawString3(76, 86, "Press Start", WHITE);
 
     //TODO 2.1: Wait for vertical blank and flip the page (you don't need to reload the palette)
     waitForVBlank();
-
-
 
     state = START;
 
